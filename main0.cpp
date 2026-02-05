@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include "main.hpp"
 
 /***********
  * Configs *
@@ -22,7 +22,7 @@ extern "C" {
  * Opti prevention *
  *******************/
 
-int seed = 42;
+u64 seed = 42;
 
 #define _noinline __attribute__((noinline))
 
@@ -30,23 +30,9 @@ int seed = 42;
  * Class without virtual members *
  *********************************/
 
-/*
- * Define a class with no virtual methods.
- */
-class base
-#ifdef BASE_IS_FINAL
-	final
-#endif
-{
-	public:
-	int mtd0(void) {return 0;}
-	int mtd1(void) {return 1;}
-	int mtd2(void);
-	int mtd3(void);
-};
 
 /* base::method pointer. */
-typedef int (base::*base_mptr)(void);
+typedef u64 (base::*base_mptr)(void);
 
 /*
  * Utilities
@@ -56,13 +42,13 @@ typedef int (base::*base_mptr)(void);
  * Get a (random) base pointer.
  */ 
 _noinline base *base_get_ptr(void) {
-	return (base *) (long long int) seed;
+	return new base();
 };
 
 /*
  * Get a (random) method pointer.
  */
-_noinline base_mptr base_get_mptr(int idx) {
+_noinline base_mptr base_get_mptr(u64 idx) {
 	if (seed) return 0;
 	switch (idx) {
 		case 0:return &base::mtd0;
@@ -77,7 +63,7 @@ _noinline base_mptr base_get_mptr(int idx) {
  * From an instance pointer an a method pointer, call the
  * method on the instance.
  */
-_noinline int base_mptr_call(base *ptr, base_mptr mtd) {
+_noinline u64 base_mptr_call(base *ptr, base_mptr mtd) {
 	return (ptr->*mtd)();
 }
 
@@ -86,9 +72,18 @@ _noinline int base_mptr_call(base *ptr, base_mptr mtd) {
  */
 
 /*
+ * Fetch (sum) attributes.
+ */
+__attribute__((optimize("O1")))
+u64 base_get_atts() {
+	base *ptr = base_get_ptr();
+	return ptr->att0 + ptr->att1 + ptr->att2 + ptr->att3;
+}
+
+/*
  * Perform an inline method call directly. 
  */
-int base_inline_call(void) {
+u64 base_inline_call(void) {
 	base *ptr = base_get_ptr();
 	return ptr->mtd0();
 }
@@ -96,7 +91,7 @@ int base_inline_call(void) {
 /*
  * Perform a non inline method call directly. 
  */
-int base_direct_call(void) {
+u64 base_direct_call(void) {
 	base *ptr = base_get_ptr();
 	return ptr->mtd2();
 }
@@ -104,7 +99,7 @@ int base_direct_call(void) {
 /*
  * Perform a method call by pointer. 
  */
-int base_indirect_call(void) {
+u64 base_indirect_call(void) {
 	base *ptr = base_get_ptr();
 	base_mptr mtd = base_get_mptr(0);
 	return base_mptr_call(ptr, mtd);
@@ -117,7 +112,7 @@ int base_indirect_call(void) {
 void base_show_mptr(void) {
 	base *ptr;
 	base_mptr mtd;
-	long long int prv = seed;
+	u64 prv = seed;
 	ptr = base_get_ptr();
 	seed = 0;
 	mtd = base_get_mptr(0);
@@ -138,19 +133,9 @@ void base_show_mptr(void) {
  * Class with virtual members *
  ******************************/
 
-/*
- * Define a class with virtual methods.
- */
-class vbase {
-	public:
-	virtual int mtd0(void);
-	virtual int mtd1(void);
-	int mtd2(void);
-	int mtd3(void);
-};
 
 /* vbase::method pointer. */
-typedef int (vbase::*vbase_mptr)(void);
+typedef u64 (vbase::*vbase_mptr)(void);
 
 /*
  * Utilities
@@ -160,13 +145,13 @@ typedef int (vbase::*vbase_mptr)(void);
  * Get a (random) vbase pointer.
  */ 
 _noinline vbase *vbase_get_ptr(void) {
-	return (vbase *) (long long int) seed;
+	return new child();
 };
 
 /*
  * Get a (random) method pointer.
  */
-_noinline vbase_mptr vbase_get_mptr(int idx) {
+_noinline vbase_mptr vbase_get_mptr(u64 idx) {
 	if (seed) return 0;
 	switch (idx) {
 		case 0:return &vbase::mtd0;
@@ -181,7 +166,7 @@ _noinline vbase_mptr vbase_get_mptr(int idx) {
  * From an instance pointer an a method pointer, call the
  * method on the instance.
  */
-_noinline int vbase_mptr_call(vbase *ptr, vbase_mptr mtd) {
+_noinline u64 vbase_mptr_call(vbase *ptr, vbase_mptr mtd) {
 	return (ptr->*mtd)();
 }
 
@@ -190,9 +175,18 @@ _noinline int vbase_mptr_call(vbase *ptr, vbase_mptr mtd) {
  */
 
 /*
+ * Fetch (sum) attributes.
+ */
+__attribute__((optimize("O1")))
+u64 vbase_get_atts() {
+	vbase *ptr = vbase_get_ptr();
+	return ptr->att0 + ptr->att1 + ptr->att2 + ptr->att3;
+}
+
+/*
  * Perform a non-virtual method call directly. 
  */
-int vbase_direct_call(void) {
+u64 vbase_direct_call(void) {
 	vbase *ptr = vbase_get_ptr();
 	return ptr->mtd2();
 }
@@ -200,7 +194,7 @@ int vbase_direct_call(void) {
 /*
  * Perform a virtual method call directly. 
  */
-int vbase_direct_vcall(void) {
+u64 vbase_direct_vcall(void) {
 	vbase *ptr = vbase_get_ptr();
 	return ptr->mtd0();
 }
@@ -208,7 +202,7 @@ int vbase_direct_vcall(void) {
 /*
  * Perform a virtual method call by pointer. 
  */
-int vbase_indirect_call(void) {
+u64 vbase_indirect_call(void) {
 	vbase *ptr = vbase_get_ptr();
 	vbase_mptr mtd = vbase_get_mptr(0);
 	return vbase_mptr_call(ptr, mtd);
@@ -221,7 +215,7 @@ int vbase_indirect_call(void) {
 void vbase_show_mptr(void) {
 	vbase *ptr;
 	vbase_mptr mtd;
-	long long int prv = seed;
+	u64 prv = seed;
 	ptr = vbase_get_ptr();
 	seed = 0;
 	mtd = vbase_get_mptr(0);
@@ -238,14 +232,26 @@ void vbase_show_mptr(void) {
 	seed = prv;
 }
 
+_noinline void* trap() {
+	void *x = malloc(16);
+	return x;
+}
+
 /**************
  * Entrypoint *
  **************/
 
+__attribute__((optimize("O0")))
 int main(void) {
 
+	// Show various method pointers.
 	base_show_mptr();
 	vbase_show_mptr();
+
+	// Allocate two instances and break.
+	base *base_ptr = base_get_ptr();
+	vbase *vbase_ptr = vbase_get_ptr();
+	void *res = trap();
 
 }
 
