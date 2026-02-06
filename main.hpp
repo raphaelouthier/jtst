@@ -42,4 +42,7 @@ class vbase {
 class child : public vbase {
 	u64 mtd0(void) override;
 	u64 mtd1(void) override;
+	u8 att4 = 0xff;
+	u64 att5 = 5;
+	u8 att6 = 6;
 };
