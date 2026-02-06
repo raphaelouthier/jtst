@@ -249,6 +249,7 @@ int main(void) {
 	vbase_show_mptr();
 
 	// Allocate two instances and break.
+	child *c = new child();
 	base *base_ptr = base_get_ptr();
 	vbase *vbase_ptr = vbase_get_ptr();
 	void *res = trap();
