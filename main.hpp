@@ -40,7 +40,15 @@ class vbase {
 	u64 att2 = 2;
 	u64 att3 = 3;
 };
-class child : public vbase {
+class base1 {
+
+	uint64_t other0 = 0x10;
+	uint64_t other1 = 0x11;
+	uint64_t other2 = 0x12;
+	uint64_t other3 = 0x13;
+
+};
+class child : public vbase, public base1 {
 	u64 mtd0(void) override;
 	u64 mtd1(void) override;
 	u8 att4 = 0xff;
